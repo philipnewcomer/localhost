@@ -28,9 +28,25 @@ class Brew
     {
         $installedFormula = explode(
             PHP_EOL,
-            trim($this->commandLine->run('brew list'))
+            $this->commandLine->run('brew list')
         );
 
         return in_array($formula, $installedFormula);
+    }
+
+    public function startService(string $formula)
+    {
+        return $this->commandLine->run(sprintf(
+            'brew services start %s',
+            $formula
+        ));
+    }
+
+    public function stopService(string $formula)
+    {
+        return $this->commandLine->run(sprintf(
+            'brew services stop %s',
+            $formula
+        ));
     }
 }

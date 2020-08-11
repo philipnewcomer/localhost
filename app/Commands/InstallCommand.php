@@ -11,10 +11,10 @@ class InstallCommand extends Command
 
     protected $description = 'Installs required dependencies.';
 
-    public function handle(Brew $brew)
+    public function handle()
     {
-        $this->ensureInstalled('nginx', 'Nginx');
         $this->ensureInstalled('mariadb', 'MariaDB');
+        $this->ensureInstalled('nginx', 'Nginx');
         $this->ensureInstalled('redis', 'Redis');
 
         $this->info(sprintf(
