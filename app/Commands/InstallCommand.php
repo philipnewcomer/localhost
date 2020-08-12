@@ -15,6 +15,9 @@ class InstallCommand extends Command
     {
         $this->ensureInstalled('mariadb', 'MariaDB');
         $this->ensureInstalled('nginx', 'Nginx');
+        foreach (config('php.versions') as $version) {
+            $this->ensureInstalled('php@' . $version, 'PHP ' . $version);
+        }
         $this->ensureInstalled('redis', 'Redis');
 
         $this->info(sprintf(

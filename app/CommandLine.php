@@ -25,6 +25,7 @@ class CommandLine
 
         if (! $process->isSuccessful()) {
             $onError($process->getExitCode(), $process->getErrorOutput());
+            return trim($process->getErrorOutput());
         }
 
         return trim($process->getOutput());

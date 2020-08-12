@@ -2,8 +2,6 @@
 
 namespace App;
 
-use Exception;
-
 class Brew
 {
     /**
@@ -46,6 +44,17 @@ class Brew
     {
         return $this->commandLine->run(sprintf(
             'brew services stop %s',
+            $formula
+        ), function () {
+            // Don't abort if the serice isn't running.
+            // @todo find a better way to handle this.
+        });
+    }
+
+    public function restartService(string $formula)
+    {
+        return $this->commandLine->run(sprintf(
+            'brew services restart %s',
             $formula
         ));
     }
