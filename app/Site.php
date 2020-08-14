@@ -52,17 +52,27 @@ class Site
         return $publicDirectory;
     }
 
-    public function getHost()
+    public function getHosts()
     {
-        if (! empty($this->settings['host'])) {
-            return $this->settings['host'];
+        $hosts = [];
+
+        if (empty($this->settings['host']) && empty($this->settings['hosts'])) {
+            $hosts[] = sprintf(
+                '%s.%s',
+                Str::afterLast($this->path, '/'),
+                config('sites.default_tld')
+            );
         }
 
-        return sprintf(
-            '%s.%s',
-            Str::afterLast($this->path, '/'),
-            config('sites.default_tld')
-        );
+        if (! empty($this->settings['host'])) {
+            $hosts[] = $this->settings['host'];
+        }
+
+        if (! empty($this->settings['hosts'])) {
+            $hosts = array_merge($hosts, $this->settings['hosts']);
+        }
+
+        return array_unique($hosts);
     }
 
     public function getPhpVersion()

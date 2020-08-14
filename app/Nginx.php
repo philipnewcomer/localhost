@@ -42,7 +42,7 @@ class Nginx
         $replace = [
             'certPath' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command')),
             'certKeyPath' => sprintf('%s/%s.key', config('environment.config_directory_path'), config('app.command')),
-            'host' => $site->getHost(),
+            'serverName' => join(' ', $site->getHosts()),
             'phpSocketPath' => sprintf(
                 '%s/php-%s.sock',
                 config('php.socket_directory'),

@@ -26,9 +26,9 @@ class Sites
         $hosts = ['localhost'];
 
         foreach ($this->getAll() as $site) {
-            $hosts[] = $site->getHost();
+            $hosts = array_merge($hosts, $site->getHosts());
         }
 
-        return $hosts;
+        return array_unique($hosts);
     }
 }
