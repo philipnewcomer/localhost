@@ -6,6 +6,8 @@ use App\Brew;
 use App\Config;
 use App\Nginx;
 use App\Php;
+use App\Sites;
+use App\Ssl;
 use LaravelZero\Framework\Commands\Command;
 
 class StartCommand extends Command
@@ -14,11 +16,15 @@ class StartCommand extends Command
 
     protected $description = 'Boots up the system.';
 
-    public function handle(Config $config, Nginx $nginx, Php $php)
+    public function handle(Config $config, Nginx $nginx, Php $php, Sites $sites, Ssl $ssl)
     {
         $config->maybeCreateConfigDirectory();
-        $nginx->generateSiteConfigs();
         $php->generateFpmConfigs();
+
+        $ssl->maybeGenerateCaCert();
+        $ssl->generateHostsCertificate($sites->getAllHosts());
+
+        $nginx->generateSiteConfigs();
 
         $this->startServices();
     }

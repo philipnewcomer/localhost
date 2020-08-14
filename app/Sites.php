@@ -9,7 +9,7 @@ class Sites
     /**
      * @return Site[]
      */
-    public function getAll()
+    public function getAll(): array
     {
         $sites = [];
         $siteDirectories = File::directories(config('sites.sites_dir'));
@@ -19,5 +19,16 @@ class Sites
         }
 
         return $sites;
+    }
+
+    public function getAllHosts(): array
+    {
+        $hosts = ['localhost'];
+
+        foreach ($this->getAll() as $site) {
+            $hosts[] = $site->getHost();
+        }
+
+        return $hosts;
     }
 }

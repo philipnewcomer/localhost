@@ -40,13 +40,15 @@ class Nginx
         $config = File::get('stubs/nginx-site.conf');
 
         $replace = [
+            'certPath' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command')),
+            'certKeyPath' => sprintf('%s/%s.key', config('environment.config_directory_path'), config('app.command')),
             'host' => $site->getHost(),
-            'publicDirectoryPath' => $site->getPublicDirectoryPath(),
             'phpSocketPath' => sprintf(
                 '%s/php-%s.sock',
                 config('php.socket_directory'),
                 $site->getPhpVersion()
-            )
+            ),
+            'publicDirectoryPath' => $site->getPublicDirectoryPath(),
         ];
 
         foreach ($replace as $placeholder => $value) {
