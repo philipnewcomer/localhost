@@ -22,11 +22,13 @@ class StopCommand extends Command
 
         $nginx->deleteSiteConfigs();
 
+        $php->deleteConfigs();
         $php->deleteFpmConfigs();
     }
 
     protected function stopServices()
     {
+        $this->line(app(Brew::class)->stopService('mailhog'));
         $this->line(app(Brew::class)->stopService('mariadb'));
         $this->line(app(Brew::class)->stopService('nginx'));
         foreach (config('php.versions') as $version) {

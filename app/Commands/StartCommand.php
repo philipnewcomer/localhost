@@ -19,9 +19,11 @@ class StartCommand extends Command
 
     public function handle(Config $config, Hosts $hosts, Nginx $nginx, Php $php, Sites $sites, Ssl $ssl)
     {
+        $config->maybeCreateConfigDirectory();
+
         $hosts->setHosts($sites->getAllHosts());
 
-        $config->maybeCreateConfigDirectory();
+        $php->generateConfigs();
         $php->generateFpmConfigs();
 
         $ssl->maybeGenerateCaCert();
@@ -34,6 +36,7 @@ class StartCommand extends Command
 
     protected function startServices()
     {
+        $this->line(app(Brew::class)->startService('mailhog'));
         $this->line(app(Brew::class)->startService('mariadb'));
         $this->line(app(Brew::class)->startService('nginx'));
         foreach (config('php.versions') as $version) {

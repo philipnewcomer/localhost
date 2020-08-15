@@ -13,6 +13,7 @@ class InstallCommand extends Command
 
     public function handle()
     {
+        $this->ensureInstalled('mailhog', 'Mailhog');
         $this->ensureInstalled('mariadb', 'MariaDB');
         $this->ensureInstalled('nginx', 'Nginx');
         foreach (config('php.versions') as $version) {

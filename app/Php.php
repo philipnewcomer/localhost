@@ -6,6 +6,36 @@ use Illuminate\Support\Facades\File;
 
 class Php
 {
+    public function generateConfigs()
+    {
+        foreach (config('php.versions') as $phpVersion) {
+            $config = File::get('stubs/php.ini');
+
+            $filePath = sprintf(
+                '%s/%s.ini',
+                str_replace('{version}', $phpVersion, config('php.config_directory')),
+                config('app.command')
+            );
+
+            File::put($filePath, $config);
+        }
+    }
+
+    public function deleteConfigs()
+    {
+        foreach (config('php.versions') as $phpVersion) {
+            $filePath = sprintf(
+                '%s/%s.ini',
+                str_replace('{version}', $phpVersion, config('php.config_directory')),
+                config('app.command')
+            );
+
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+        }
+    }
+
     public function generateFpmConfigs()
     {
         foreach (config('php.versions') as $phpVersion) {
@@ -62,7 +92,7 @@ class Php
         foreach (config('php.versions') as $phpVersion) {
             $filePath = sprintf(
                 '%s/%s.conf',
-                str_replace('{version}', str_replace('.', '', $phpVersion), config('php.fpm_config_directory')),
+                str_replace('{version}', $phpVersion, config('php.fpm_config_directory')),
                 config('app.command')
             );
 
