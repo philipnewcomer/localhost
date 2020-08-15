@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\Hosts;
 use App\Nginx;
 use App\Php;
 use LaravelZero\Framework\Commands\Command;
@@ -13,10 +14,14 @@ class StopCommand extends Command
 
     protected $description = 'Shuts down the system.';
 
-    public function handle(Nginx $nginx, Php $php)
+    public function handle(Hosts $hosts, Nginx $nginx, Php $php)
     {
+        $hosts->clearHosts();
+
         $this->stopServices();
+
         $nginx->deleteSiteConfigs();
+
         $php->deleteFpmConfigs();
     }
 

@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Brew;
 use App\Config;
+use App\Hosts;
 use App\Nginx;
 use App\Php;
 use App\Sites;
@@ -16,8 +17,10 @@ class StartCommand extends Command
 
     protected $description = 'Boots up the system.';
 
-    public function handle(Config $config, Nginx $nginx, Php $php, Sites $sites, Ssl $ssl)
+    public function handle(Config $config, Hosts $hosts, Nginx $nginx, Php $php, Sites $sites, Ssl $ssl)
     {
+        $hosts->setHosts($sites->getAllHosts());
+
         $config->maybeCreateConfigDirectory();
         $php->generateFpmConfigs();
 
