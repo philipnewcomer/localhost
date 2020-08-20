@@ -37,7 +37,7 @@ class Nginx
 
     public function getConfig(Site $site)
     {
-        $config = File::get('stubs/nginx-site.conf');
+        $config = File::get(base_path('stubs/nginx-site.conf'));
 
         $replace = [
             'certPath' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command')),
