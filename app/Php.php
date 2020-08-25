@@ -6,6 +6,26 @@ use Illuminate\Support\Facades\File;
 
 class Php
 {
+    /**
+     * @var CommandLine
+     */
+    protected $commandLine;
+
+    public function __construct(CommandLine $commandLine)
+    {
+        $this->commandLine = $commandLine;
+    }
+
+    public function link(string $version)
+    {
+        $command = sprintf(
+            'brew unlink php && brew link php@%s --force --overwrite',
+            $version
+        );
+
+        return $this->commandLine->run($command);
+    }
+
     public function generateConfigs()
     {
         foreach (config('php.versions') as $phpVersion) {

@@ -3,6 +3,8 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\Pecl;
+use App\Php;
 use LaravelZero\Framework\Commands\Command;
 
 class InstallCommand extends Command
@@ -13,13 +15,18 @@ class InstallCommand extends Command
 
     public function handle()
     {
-        $this->ensureInstalled('mailhog', 'Mailhog');
-        $this->ensureInstalled('mariadb', 'MariaDB');
-        $this->ensureInstalled('nginx', 'Nginx');
+        $this->ensureInstalledBrew('mailhog', 'Mailhog');
+        $this->ensureInstalledBrew('mariadb', 'MariaDB');
+        $this->ensureInstalledBrew('nginx', 'Nginx');
         foreach (config('php.versions') as $version) {
-            $this->ensureInstalled('php@' . $version, 'PHP ' . $version);
+            $this->ensureInstalledBrew('php@' . $version, 'PHP ' . $version);
         }
-        $this->ensureInstalled('redis', 'Redis');
+        $this->ensureInstalledBrew('redis', 'Redis');
+
+        $this->ensureInstalledPecl([
+            'redis' => 'Redis',
+            'xdebug' => 'Xdebug'
+        ]);
 
         $this->info(sprintf(
             'Installation successful. Run `%s start` to boot up the system.',
@@ -27,15 +34,29 @@ class InstallCommand extends Command
         ));
     }
 
-    protected function ensureInstalled(string $formula, $label)
+    protected function ensureInstalledBrew(string $formula, $label)
     {
-        $brew = app(Brew::class);
-
-        if (! $brew->isInstalled($formula)) {
+        if (! app(Brew::class)->isInstalled($formula)) {
             $this->line(sprintf('Installing %s...', $label));
-            $brew->install($formula);
+            app(Brew::class)->install($formula);
         } else {
             $this->line(sprintf('%s is already installed.', $label));
+        }
+    }
+
+    protected function ensureInstalledPecl(array $packages)
+    {
+        foreach (config('php.versions') as $phpVersion) {
+            app(Php::class)->link($phpVersion);
+
+            foreach ($packages as $packageName => $packageLabel) {
+                if (! app(Pecl::class)->isInstalled($packageName)) {
+                    $this->line(sprintf('Installing %s for PHP %s...', $packageLabel, $phpVersion));
+                    app(Pecl::class)->install($packageName);
+                } else {
+                    $this->line(sprintf('%s for PHP %s is already installed.', $packageLabel, $phpVersion));
+                }
+            }
         }
     }
 }
