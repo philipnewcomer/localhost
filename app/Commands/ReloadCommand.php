@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\CommandLine;
 use App\Hosts;
 use App\Nginx;
 use App\Sites;
@@ -15,14 +16,24 @@ class ReloadCommand extends Command
 
     protected $description = 'Reloads the sites and restarts services.';
 
-    public function handle(Brew $brew, Hosts $hosts, Nginx $nginx, Sites $sites, Ssl $ssl)
+    public function handle(Brew $brew, CommandLine $commandLine, Hosts $hosts, Nginx $nginx, Sites $sites, Ssl $ssl)
     {
-        $hosts->setHosts($sites->getAllHosts());
+        $commandLine->requestSudo();
 
-        $ssl->generateHostsCertificate($sites->getAllHosts());
+        $this->task('Updating hosts file', function () use ($hosts, $sites) {
+            $hosts->setHosts($sites->getAllHosts());
+        });
 
-        $nginx->generateSiteConfigs();
+        $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
+            $ssl->generateHostsCertificate($sites->getAllHosts());
+        });
 
-        $this->line($brew->restartService('nginx'));
+        $this->task('Generating site configs', function () use ($nginx) {
+            $nginx->generateSiteConfigs();
+        });
+
+        $this->task('Restarting Nginx', function () use ($brew) {
+            $brew->restartService('nginx');
+        });
     }
 }

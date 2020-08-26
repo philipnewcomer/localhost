@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\CommandLine;
 use App\Hosts;
 use App\Nginx;
 use App\Php;
@@ -14,26 +15,30 @@ class StopCommand extends Command
 
     protected $description = 'Shuts down the system.';
 
-    public function handle(Hosts $hosts, Nginx $nginx, Php $php)
+    public function handle(Brew $brew, CommandLine $commandLine, Hosts $hosts, Nginx $nginx, Php $php)
     {
-        $hosts->clearHosts();
+        $commandLine->requestSudo();
 
-        $this->stopServices();
+        $this->task('Stopping services', function () use ($brew) {
+            $brew->stopService('mailhog');
+            $brew->stopService('mariadb');
+            $brew->stopService('nginx');
 
-        $nginx->deleteSiteConfigs();
+            foreach (config('php.versions') as $version) {
+                $brew->stopService('php@' . $version);
+            }
 
-        $php->deleteConfigs();
-        $php->deleteFpmConfigs();
-    }
+            $brew->stopService('redis');
+        });
 
-    protected function stopServices()
-    {
-        $this->line(app(Brew::class)->stopService('mailhog'));
-        $this->line(app(Brew::class)->stopService('mariadb'));
-        $this->line(app(Brew::class)->stopService('nginx'));
-        foreach (config('php.versions') as $version) {
-            $this->line(app(Brew::class)->stopService('php@' . $version));
-        }
-        $this->line(app(Brew::class)->stopService('redis'));
+        $this->task('Cleaning up generated configs', function () use ($nginx, $php) {
+            $nginx->deleteSiteConfigs();
+            $php->deleteConfigs();
+            $php->deleteFpmConfigs();
+        });
+
+        $this->task('Cleaning up hosts file', function () use ($hosts) {
+            $hosts->clearHosts();
+        });
     }
 }

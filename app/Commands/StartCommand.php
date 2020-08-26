@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\CommandLine;
 use App\Config;
 use App\Hosts;
 use App\Nginx;
@@ -17,31 +18,44 @@ class StartCommand extends Command
 
     protected $description = 'Boots up the system.';
 
-    public function handle(Config $config, Hosts $hosts, Nginx $nginx, Php $php, Sites $sites, Ssl $ssl)
-    {
+    public function handle(
+        Brew $brew,
+        CommandLine $commandLine,
+        Config $config,
+        Hosts $hosts,
+        Nginx $nginx,
+        Php $php,
+        Sites $sites,
+        Ssl $ssl
+    ) {
+        $commandLine->requestSudo();
         $config->maybeCreateConfigDirectory();
 
-        $hosts->setHosts($sites->getAllHosts());
+        $this->task('Updating hosts file', function () use ($hosts, $sites) {
+            $hosts->setHosts($sites->getAllHosts());
+        });
 
-        $php->generateConfigs();
-        $php->generateFpmConfigs();
+        $this->task('Generating configs', function () use ($nginx, $php) {
+            $php->generateConfigs();
+            $php->generateFpmConfigs();
+            $nginx->generateSiteConfigs();
+        });
 
-        $ssl->maybeGenerateCaCert();
-        $ssl->generateHostsCertificate($sites->getAllHosts());
+        $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
+            $ssl->maybeGenerateCaCert();
+            $ssl->generateHostsCertificate($sites->getAllHosts());
+        });
 
-        $nginx->generateSiteConfigs();
+        $this->task('Starting services', function () use ($brew) {
+            $brew->startService('mailhog');
+            $brew->startService('mariadb');
+            $brew->startService('nginx');
 
-        $this->startServices();
-    }
+            foreach (config('php.versions') as $version) {
+                $brew->startService('php@' . $version);
+            }
 
-    protected function startServices()
-    {
-        $this->line(app(Brew::class)->startService('mailhog'));
-        $this->line(app(Brew::class)->startService('mariadb'));
-        $this->line(app(Brew::class)->startService('nginx'));
-        foreach (config('php.versions') as $version) {
-            $this->line(app(Brew::class)->startService('php@' . $version));
-        }
-        $this->line(app(Brew::class)->startService('redis'));
+            $brew->startService('redis');
+        });
     }
 }

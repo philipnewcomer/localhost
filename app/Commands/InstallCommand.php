@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\CommandLine;
 use App\Pecl;
 use App\Php;
 use LaravelZero\Framework\Commands\Command;
@@ -13,8 +14,10 @@ class InstallCommand extends Command
 
     protected $description = 'Installs required dependencies.';
 
-    public function handle()
+    public function handle(CommandLine $commandLine)
     {
+        $commandLine->requestSudo();
+
         $this->ensureInstalledBrew('mailhog', 'Mailhog');
         $this->ensureInstalledBrew('mariadb', 'MariaDB');
         $this->ensureInstalledBrew('nginx', 'Nginx');
@@ -36,12 +39,11 @@ class InstallCommand extends Command
 
     protected function ensureInstalledBrew(string $formula, $label)
     {
-        if (! app(Brew::class)->isInstalled($formula)) {
-            $this->line(sprintf('Installing %s...', $label));
-            app(Brew::class)->install($formula);
-        } else {
-            $this->line(sprintf('%s is already installed.', $label));
-        }
+        $this->task(sprintf('Installing %s', $label), function () use ($formula) {
+            if (! app(Brew::class)->isInstalled($formula)) {
+                app(Brew::class)->install($formula);
+            }
+        });
     }
 
     protected function ensureInstalledPecl(array $packages)
@@ -50,12 +52,13 @@ class InstallCommand extends Command
             app(Php::class)->link($phpVersion);
 
             foreach ($packages as $packageName => $packageLabel) {
-                if (! app(Pecl::class)->isInstalled($packageName)) {
-                    $this->line(sprintf('Installing %s for PHP %s...', $packageLabel, $phpVersion));
-                    app(Pecl::class)->install($packageName);
-                } else {
-                    $this->line(sprintf('%s for PHP %s is already installed.', $packageLabel, $phpVersion));
-                }
+                $title = sprintf('Installing %s for PHP %s', $packageLabel, $phpVersion);
+
+                $this->task($title, function () use ($packageName) {
+                    if (! app(Pecl::class)->isInstalled($packageName)) {
+                        app(Pecl::class)->install($packageName);
+                    }
+                });
             }
         }
     }

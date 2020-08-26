@@ -7,6 +7,11 @@ use Symfony\Component\Process\Process;
 
 class CommandLine
 {
+    public function requestSudo()
+    {
+        $this->run('sudo cat /dev/null');
+    }
+
     public function run(string $command, callable $onError = null)
     {
         if (! is_callable($onError)) {
