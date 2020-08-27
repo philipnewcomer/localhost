@@ -11,6 +11,7 @@ use App\Php;
 use App\Sites;
 use App\Ssl;
 use LaravelZero\Framework\Commands\Command;
+use LaravelZero\Framework\Components\Logo\FigletString;
 
 class StartCommand extends Command
 {
@@ -27,6 +28,8 @@ class StartCommand extends Command
         Sites $sites,
         Ssl $ssl
     ) {
+        $this->displayLogo();
+
         $commandLine->requestSudo();
         $config->maybeCreateConfigDirectory();
 
@@ -57,6 +60,18 @@ class StartCommand extends Command
         }
 
         $this->brewStartService('redis', 'Redis');
+    }
+
+    protected function displayLogo()
+    {
+        $figlet = trim((string) new FigletString(config('app.name'), config('logo')));
+
+        // These newlines are used to match the spacing around the automatically-displayed figlet when running the
+        // command without any options.
+        $this->line(sprintf(
+            "\n\n%s\n\n\n",
+            $figlet
+        ));
     }
 
     protected function brewStartService(string $service, string $label)
