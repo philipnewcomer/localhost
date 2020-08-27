@@ -21,9 +21,11 @@ class InstallCommand extends Command
         $this->ensureInstalledBrew('mailhog', 'Mailhog');
         $this->ensureInstalledBrew('mariadb', 'MariaDB');
         $this->ensureInstalledBrew('nginx', 'Nginx');
+
         foreach (config('php.versions') as $version) {
             $this->ensureInstalledBrew('php@' . $version, 'PHP ' . $version);
         }
+
         $this->ensureInstalledBrew('redis', 'Redis');
 
         $this->ensureInstalledPecl([
@@ -43,7 +45,7 @@ class InstallCommand extends Command
             if (! app(Brew::class)->isInstalled($formula)) {
                 app(Brew::class)->install($formula);
             }
-        });
+        }, 'Waiting...');
     }
 
     protected function ensureInstalledPecl(array $packages)
@@ -58,7 +60,7 @@ class InstallCommand extends Command
                     if (! app(Pecl::class)->isInstalled($packageName)) {
                         app(Pecl::class)->install($packageName);
                     }
-                });
+                }, 'Waiting...');
             }
         }
     }

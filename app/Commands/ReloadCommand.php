@@ -22,18 +22,18 @@ class ReloadCommand extends Command
 
         $this->task('Updating hosts file', function () use ($hosts, $sites) {
             $hosts->setHosts($sites->getAllHosts());
-        });
+        }, 'Waiting...');
 
         $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
             $ssl->generateHostsCertificate($sites->getAllHosts());
-        });
+        }, 'Waiting...');
 
         $this->task('Generating site configs', function () use ($nginx) {
             $nginx->generateSiteConfigs();
-        });
+        }, 'Waiting...');
 
         $this->task('Restarting Nginx', function () use ($brew) {
             $brew->restartService('nginx');
-        });
+        }, 'Waiting...');
     }
 }

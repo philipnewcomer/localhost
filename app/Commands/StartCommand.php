@@ -19,7 +19,6 @@ class StartCommand extends Command
     protected $description = 'Boots up the system.';
 
     public function handle(
-        Brew $brew,
         CommandLine $commandLine,
         Config $config,
         Hosts $hosts,
@@ -33,29 +32,37 @@ class StartCommand extends Command
 
         $this->task('Updating hosts file', function () use ($hosts, $sites) {
             $hosts->setHosts($sites->getAllHosts());
-        });
+        }, 'Waiting...');
 
         $this->task('Generating configs', function () use ($nginx, $php) {
             $php->generateConfigs();
             $php->generateFpmConfigs();
             $nginx->generateSiteConfigs();
-        });
+        }, 'Waiting...');
 
         $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
             $ssl->maybeGenerateCaCert();
             $ssl->generateHostsCertificate($sites->getAllHosts());
-        });
+        }, 'Waiting...');
 
-        $this->task('Starting services', function () use ($brew) {
-            $brew->startService('mailhog');
-            $brew->startService('mariadb');
-            $brew->startService('nginx');
+        $this->brewStartService('mailhog', 'Mailhog');
+        $this->brewStartService('mariadb', 'MariaDB');
+        $this->brewStartService('nginx', 'Nginx');
 
-            foreach (config('php.versions') as $version) {
-                $brew->startService('php@' . $version);
-            }
+        foreach (config('php.versions') as $phpVersion) {
+            $this->brewStartService(
+                'php@' . $phpVersion,
+                sprintf('PHP %s', $phpVersion)
+            );
+        }
 
-            $brew->startService('redis');
-        });
+        $this->brewStartService('redis', 'Redis');
+    }
+
+    protected function brewStartService(string $service, string $label)
+    {
+        $this->task(sprintf('Starting %s', $label), function () use ($service) {
+            app(Brew::class)->startService($service);
+        }, 'Waiting...');
     }
 }
