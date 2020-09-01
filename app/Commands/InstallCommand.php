@@ -33,6 +33,13 @@ class InstallCommand extends Command
             'xdebug' => 'Xdebug'
         ]);
 
+        $this->task('Setting MySQL root user password', function () use ($commandLine) {
+            $sql = "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root'; FLUSH PRIVILEGES";
+
+            app(Brew::class)->startService('mariadb');
+            $commandLine->run(sprintf('sudo mysql -u root -e "%s"', $sql));
+        }, 'Waiting...');
+
         $this->info(sprintf(
             'Installation successful. Run `%s start` to boot up the system.',
             config('app.command')
