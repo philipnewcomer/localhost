@@ -1,37 +1,51 @@
-<p align="center">
-    <img title="Laravel Zero" height="100" src="https://raw.githubusercontent.com/laravel-zero/docs/master/images/logo/laravel-zero-readme.png" />
-</p>
+# Localhost
 
-<p align="center">
-  <a href="https://github.com/laravel-zero/framework/actions"><img src="https://img.shields.io/github/workflow/status/laravel-zero/framework/Continuous%20Integration.svg" alt="Build Status"></img></a>
-  <a href="https://scrutinizer-ci.com/g/laravel-zero/framework"><img src="https://img.shields.io/scrutinizer/g/laravel-zero/framework.svg" alt="Quality Score"></img></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://poser.pugx.org/laravel-zero/framework/d/total.svg" alt="Total Downloads"></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://poser.pugx.org/laravel-zero/framework/v/stable.svg" alt="Latest Stable Version"></a>
-  <a href="https://packagist.org/packages/laravel-zero/framework"><img src="https://poser.pugx.org/laravel-zero/framework/license.svg" alt="License"></a>
-</p>
+A minimal macOS local development environment with automatic Nginx configuration, hosts file management, multiple PHP versions, and SSL support.
 
-<h4> <center>This is a <bold>community project</bold> and not an official Laravel one </center></h4>
+## Installation
 
-Laravel Zero was created by, and is maintained by [Nuno Maduro](https://github.com/nunomaduro), and is a micro-framework that provides an elegant starting point for your console application. It is an **unofficial** and customized version of Laravel optimized for building command-line applications.
+First, make sure you have [Homebrew](https://brew.sh) installed.
 
-- Built on top of the [Laravel](https://laravel.com) components.
-- Optional installation of Laravel [Eloquent](https://laravel-zero.com/docs/database/), Laravel [Logging](https://laravel-zero.com/docs/logging/) and many others.
-- Supports interactive [menus](https://laravel-zero.com/docs/build-interactive-menus/) and [desktop notifications](https://laravel-zero.com/docs/send-desktop-notifications/) on Linux, Windows & MacOS.
-- Ships with a [Scheduler](https://laravel-zero.com/docs/task-scheduling/) and  a [Standalone Compiler](https://laravel-zero.com/docs/build-a-standalone-application/).
-- Integration with [Collision](https://github.com/nunomaduro/collision) - Beautiful error reporting
+Download the localhost PHAR, make it executable, and move it to your local bin directory:
+```bash
+curl -O https://github.com/philipnewcomer/localhost/raw/master/builds/localhost
+chmod +x localhost
+sudo mv localhost /usr/local/bin/localhost
+```
 
-------
+Finally, run `localhost install` to install the required dependencies via Homebrew.
 
-## Documentation
+## Commands
 
-For full documentation, visit [laravel-zero.com](https://laravel-zero.com/).
+- `localhost install`: Installs required dependencies.
+- `localhost start`: Boots up the system.
+- `localhost stop`: Shuts down the system.
+- `localhost reload`: Reloads the sites and restarts services.
 
-## Support the development
-**Do you like this project? Support it by donating**
+## Local Sites
 
-- PayPal: [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L)
-- Patreon: [Donate](https://www.patreon.com/nunomaduro)
+localhost will look for any directories that exist in your user's `Sites` directory. Any directories that exist will automatically be accessible at the URL `http://{directory}.test`, unless the host has been customized via a `localhost.yml` config file (see below). You can optionally create a subdirectory named `htdocs` and place your project files in it instead of in the site root directory, if you want to keep the localhost config file out of your project's version control.
 
-## License
+## Local Site Configuration
 
-Laravel Zero is an open-source software licensed under the [MIT license](https://github.com/laravel-zero/laravel-zero/blob/stable/LICENSE.md).
+localhost can read an optional file named `localhost.yml` placed in the site's root directory to customize the site settings.
+This file is not required, but with it you can customize any of the following directives:
+```yaml
+php_version: 7.4 # 7.2, 7.3, or 7.4
+host: host.test
+hosts: # if a site requires multiple hosts
+ - host1.test
+ - host2.test
+ - host3.test
+```
+
+## Credentials
+
+- MySQL
+    - Host: `127.0.0.1`
+    - User: `root`
+    - Password: `root`
+
+## Updating
+
+To update localhost to the latest version, run `localhost self-update`.
