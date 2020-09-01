@@ -6,11 +6,9 @@ A minimal macOS local development environment with automatic Nginx configuration
 
 First, make sure you have [Homebrew](https://brew.sh) installed.
 
-Download the localhost PHAR, make it executable, and move it to your local bin directory:
+Run the following command in your terminal, which will download the localhost PHAR executable, make it executable, and place it in the `/usr/local/bin` directory:
 ```bash
-curl -O https://github.com/philipnewcomer/localhost/raw/master/builds/localhost
-chmod +x localhost
-sudo mv localhost /usr/local/bin/localhost
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/philipnewcomer/localhost/master/install.sh)"
 ```
 
 Finally, run `localhost install` to install the required dependencies via Homebrew.
