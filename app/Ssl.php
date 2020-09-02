@@ -85,7 +85,7 @@ class Ssl
             $hostNamesConfig .= sprintf('DNS.%s = %s', $hostIndex + 1, $host) . PHP_EOL;
         }
 
-        $sslConfig = File::get(base_path('stubs/openssl.conf'));
+        $sslConfig = app(Stub::class)->get('openssl.conf');
         $sslConfig = str_replace('{hostNamesConfig}', $hostNamesConfig, $sslConfig);
         File::put($sslConfigPath, $sslConfig);
 

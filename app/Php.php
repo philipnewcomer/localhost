@@ -29,7 +29,7 @@ class Php
     public function generateConfigs()
     {
         foreach (config('php.versions') as $phpVersion) {
-            $config = File::get(base_path('stubs/php.ini'));
+            $config = app(Stub::class)->get('php.ini');
 
             $filePath = sprintf(
                 '%s/%s.ini',
@@ -59,7 +59,7 @@ class Php
     public function generateFpmConfigs()
     {
         foreach (config('php.versions') as $phpVersion) {
-            $config = File::get(base_path('stubs/php-fpm.conf'));
+            $config = app(Stub::class)->get('php-fpm.conf');
 
             $replace = [
                 'command' => config('app.command'),
