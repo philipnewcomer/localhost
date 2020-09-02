@@ -6,6 +6,7 @@ use App\Brew;
 use App\CommandLine;
 use App\Pecl;
 use App\Php;
+use Exception;
 use LaravelZero\Framework\Commands\Command;
 
 class InstallCommand extends Command
@@ -33,11 +34,37 @@ class InstallCommand extends Command
             'xdebug' => 'Xdebug'
         ]);
 
-        $this->task('Setting MySQL root user password', function () use ($commandLine) {
-            $sql = "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root'; FLUSH PRIVILEGES";
-
+        $this->task('Creating MySQL user', function () use ($commandLine) {
             app(Brew::class)->startService('mariadb');
-            $commandLine->run(sprintf('sudo mysql -u root -e "%s"', $sql));
+
+            // If this is the first time MariaDB has been started, there will be a bit of a delay before it will be
+            // ready to accept connections.
+            $timeout = now()->addSeconds(10);
+            while (true) {
+                $result = $commandLine->run('sudo mysqladmin ping --no-beep', function () {});
+
+                if ('mysqld is alive' === $result) {
+                    break;
+                }
+
+                if (now() > $timeout) {
+                    throw new Exception('Timed out waiting for MySQL.');
+                }
+
+                sleep(1);
+            }
+
+            $sql = "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+                . " DELETE FROM mysql.user WHERE User='';"
+                . " DROP DATABASE IF EXISTS test;"
+                . " DELETE FROM mysql.db WHERE Db='test' OR Db='test\_%';"
+                . " CREATE USER IF NOT EXISTS 'localhost'@'%' IDENTIFIED BY 'localhost';"
+                . " GRANT ALL PRIVILEGES ON *.* to 'localhost'@'%';"
+                . " FLUSH PRIVILEGES;";
+
+            $commandLine->run(sprintf('sudo mysql -e "%s"', $sql));
+
+            app(Brew::class)->stopService('mariadb');
         }, 'Waiting...');
 
         $this->info(sprintf(
