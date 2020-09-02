@@ -1,7 +1,9 @@
 #!/bin/bash
 
-curl -O https://raw.githubusercontent.com/philipnewcomer/localhost/master/builds/localhost
+if test -f /usr/local/bin/localhost; then
+    sudo rm /usr/local/bin/localhost
+fi
 
-chmod +x localhost
+curl -o /usr/local/bin/localhost https://raw.githubusercontent.com/philipnewcomer/localhost/master/builds/localhost
 
-mv localhost /usr/local/bin/localhost
+chmod +x /usr/local/bin/localhost
