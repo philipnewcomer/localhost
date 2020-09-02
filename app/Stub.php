@@ -9,11 +9,9 @@ class Stub
 {
     public function get(string $filename): string
     {
-        $path = 'stubs/' . $filename;
-
-        if (! Phar::running()) {
-            $path = base_path($path);
-        }
+        $path = Phar::running()
+            ? Phar::running() . '/stubs/' . $filename
+            : base_path('stubs/' . $filename);
 
         return File::get($path);
     }
