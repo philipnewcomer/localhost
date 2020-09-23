@@ -11,7 +11,7 @@ Run the following command in your terminal, which will download the localhost PH
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/philipnewcomer/localhost/master/install.sh)"
 ```
 
-Finally, run `localhost install` to install the required dependencies via Homebrew.
+After installing Localhost, the script will install additional dependencies via Homebrew.
 
 ## Commands
 
