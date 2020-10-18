@@ -28,9 +28,13 @@ class Php
 
     public function generateConfigs()
     {
-        foreach (config('php.versions') as $phpVersion) {
-            $config = app(Stub::class)->get('php.ini');
+        $replace = [
+            'cafile' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command'))
+        ];
 
+        $config = app(Stub::class)->get('php.ini', $replace);
+
+        foreach (config('php.versions') as $phpVersion) {
             $filePath = sprintf(
                 '%s/%s.ini',
                 str_replace('{version}', $phpVersion, config('php.config_directory')),
@@ -59,8 +63,6 @@ class Php
     public function generateFpmConfigs()
     {
         foreach (config('php.versions') as $phpVersion) {
-            $config = app(Stub::class)->get('php-fpm.conf');
-
             $replace = [
                 'command' => config('app.command'),
                 'user' => config('environment.user'),
@@ -71,13 +73,7 @@ class Php
                 )
             ];
 
-            foreach ($replace as $placeholder => $value) {
-                $config = str_replace(
-                    sprintf('{%s}', $placeholder),
-                    $value,
-                    $config
-                );
-            }
+            $config = app(Stub::class)->get('php-fpm.conf', $replace);
 
             $filePath = sprintf(
                 '%s/%s.conf',

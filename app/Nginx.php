@@ -37,8 +37,6 @@ class Nginx
 
     public function getConfig(Site $site)
     {
-        $config = app(Stub::class)->get('nginx-site.conf');
-
         $replace = [
             'certPath' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command')),
             'certKeyPath' => sprintf('%s/%s.key', config('environment.config_directory_path'), config('app.command')),
@@ -51,14 +49,6 @@ class Nginx
             'publicDirectoryPath' => $site->getPublicDirectoryPath(),
         ];
 
-        foreach ($replace as $placeholder => $value) {
-            $config = str_replace(
-                sprintf('{%s}', $placeholder),
-                $value,
-                $config
-            );
-        }
-
-        return $config;
+        return app(Stub::class)->get('nginx-site.conf', $replace);
     }
 }
