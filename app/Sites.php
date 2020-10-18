@@ -12,7 +12,13 @@ class Sites
     public function getAll(): array
     {
         $sites = [];
-        $siteDirectories = File::directories(config('sites.sites_dir'));
+        $sitesDirectory = app(Config::class)->getUserConfig('sites_directory', config('sites.sites_dir'));
+
+        if (! File::isDirectory($sitesDirectory)) {
+            return $sites;
+        }
+
+        $siteDirectories = File::directories($sitesDirectory);
 
         foreach ($siteDirectories as $siteDirectory) {
             $sites[] = new Site($siteDirectory);
