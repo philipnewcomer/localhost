@@ -29,7 +29,7 @@ class Php
     public function generateConfigs()
     {
         $replace = [
-            'cafile' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command'))
+            'cafile' => sprintf('%s/cafile.pem', config('environment.config_directory_path'))
         ];
 
         $config = app(Stub::class)->get('php.ini', $replace);

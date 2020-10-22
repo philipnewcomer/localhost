@@ -26,6 +26,7 @@ class ReloadCommand extends Command
 
         $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
             $ssl->generateHostsCertificate($sites->getAllHosts());
+            $ssl->generateCafileCertificate();
         }, 'Waiting...');
 
         $this->task('Generating site configs', function () use ($nginx) {
@@ -35,5 +36,11 @@ class ReloadCommand extends Command
         $this->task('Restarting Nginx', function () use ($brew) {
             $brew->restartService('nginx');
         }, 'Waiting...');
+
+        foreach (config('php.versions') as $phpVersion) {
+            $this->task(sprintf('Restarting %s', sprintf('PHP %s', $phpVersion)), function () use ($phpVersion) {
+                app(Brew::class)->restartService('php@' . $phpVersion);
+            }, 'Waiting...');
+        }
     }
 }
