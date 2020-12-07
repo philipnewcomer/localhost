@@ -29,13 +29,19 @@ localhost will look for any directories that exist in your user's `Sites` direct
 localhost can read an optional file named `localhost.yml` placed in the site's root directory to customize the site settings.
 This file is not required, but with it you can customize any of the following directives:
 ```yaml
-php_version: 7.4 # 7.2, 7.3, or 7.4
+php_version: 7.4 # 7.2, 7.3, 7.4, or 8.0
 host: host.test
 hosts: # if a site requires multiple hosts
  - host1.test
  - host2.test
  - host3.test
 ```
+## Global Defaults
+
+To change the global defaults, create a YAML file at `~/.localhost/localhost.yml`. The following directives are available:
+
+- `default_php_version`: The default PHP version for all sites that do not have a PHP version specified in their site-specific config file.
+- `sites_directory`: The full filesystem path to your sites directory.
 
 ## Credentials
 
