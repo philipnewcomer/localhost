@@ -81,6 +81,6 @@ class Site
             return $this->settings['php_version'];
         }
 
-        return config('php.default_version');
+        return app(Config::class)->getUserConfig('default_php_version', config('php.default_version'));
     }
 }
