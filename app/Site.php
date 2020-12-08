@@ -78,9 +78,11 @@ class Site
     public function getPhpVersion()
     {
         if (! empty($this->settings['php_version'])) {
-            return $this->settings['php_version'];
+            $phpVersion = $this->settings['php_version'];
+        } else {
+            $phpVersion = app(Config::class)->getUserConfig('default_php_version', config('php.default_version'));
         }
 
-        return app(Config::class)->getUserConfig('default_php_version', config('php.default_version'));
+        return number_format($phpVersion, 1);
     }
 }
