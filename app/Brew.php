@@ -26,7 +26,7 @@ class Brew
     {
         $installedFormula = explode(
             PHP_EOL,
-            $this->commandLine->run('brew list')
+            $this->commandLine->run('brew list --formula')
         );
 
         return in_array($formula, $installedFormula);
