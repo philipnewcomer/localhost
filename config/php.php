@@ -15,5 +15,10 @@ return [
         '7.4',
         '8.0'
     ],
+    'cli_versions' => [
+        '7.3',
+        '7.4',
+        '8.0'
+    ],
     'openssl_cert_path' => '/usr/local/etc/openssl@1.1/cert.pem'
 ];
