@@ -52,6 +52,17 @@ class Site
         return $publicDirectory;
     }
 
+    public function getCustomNginxConfig()
+    {
+        $customNginxConfigFilePath = $this->path . '/nginx.conf';
+
+        if (! File::exists($customNginxConfigFilePath)) {
+            return null;
+        }
+
+        return File::get($customNginxConfigFilePath);
+    }
+
     public function getHosts()
     {
         $hosts = [];

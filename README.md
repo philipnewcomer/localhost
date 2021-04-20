@@ -36,6 +36,12 @@ hosts: # if a site requires multiple hosts
  - host2.test
  - host3.test
 ```
+### Custom Nginx Site Configuration
+
+If a site requires a custom Nginx configuration, place a file named `nginx.conf` in the site directory. If it exists, that file will be used instead of the Localhost-generated Nginx configuration for the site.
+
+This file should contain the complete Nginx `server` block for the site. You can find the automatically-generated `server` blocks for all sites at `/usr/local/etc/nginx/servers/localhost.conf`, which you can use as a starting point for your own custom configuration.
+
 ## Global Defaults
 
 To change the global defaults, create a YAML file at `~/.localhost/localhost.yml`. The following directives are available:

@@ -37,6 +37,10 @@ class Nginx
 
     public function getConfig(Site $site)
     {
+        if (! empty($customNginxConfig = $site->getCustomNginxConfig())) {
+            return $customNginxConfig;
+        }
+
         $replace = [
             'certPath' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command')),
             'certKeyPath' => sprintf('%s/%s.key', config('environment.config_directory_path'), config('app.command')),
