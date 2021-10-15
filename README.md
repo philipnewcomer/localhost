@@ -6,6 +6,9 @@ A minimal macOS local development environment with automatic Nginx configuration
 
 First, make sure you have [Homebrew](https://brew.sh) installed.
 
+**Attention Apple Silicon users:**
+*PHP 7.3 is not supported by Homebrew on Apple Silicon. I've created a branch `apple-silicon` which removes PHP 7.3. If you're on an M1 mac, [switch to the apple-silicon branch](https://github.com/philipnewcomer/localhost/tree/apple-silicon) and run the install command found there to avoid errors during install.*
+
 Run the following command in your terminal, which will download the localhost PHAR executable, make it executable, and place it in the `/usr/local/bin` directory:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/philipnewcomer/localhost/master/install.sh)"
