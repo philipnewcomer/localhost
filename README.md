@@ -6,9 +6,6 @@ A minimal macOS local development environment with automatic Nginx configuration
 
 First, make sure you have [Homebrew](https://brew.sh) installed.
 
-**Attention Apple Silicon users:**
-*PHP 7.3 is not supported by Homebrew on Apple Silicon. I've created a branch `apple-silicon` which removes PHP 7.3. If you're on an M1 mac, [switch to the apple-silicon branch](https://github.com/philipnewcomer/localhost/tree/apple-silicon) and run the install command found there to avoid errors during install.*
-
 Run the following command in your terminal, which will download the localhost PHAR executable, make it executable, and place it in the `/usr/local/bin` directory:
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/philipnewcomer/localhost/master/install.sh)"
@@ -32,7 +29,7 @@ localhost will look for any directories that exist in your user's `Sites` direct
 localhost can read an optional file named `localhost.yml` placed in the site's root directory to customize the site settings.
 This file is not required, but with it you can customize any of the following directives:
 ```yaml
-php_version: 8.0 # 7.3, 7.4, or 8.0
+php_version: 8.1 # 7.4, 8.0, or 8.1
 host: host.test
 hosts: # if a site requires multiple hosts
  - host1.test

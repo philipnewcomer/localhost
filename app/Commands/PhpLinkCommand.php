@@ -15,7 +15,7 @@ class PhpLinkCommand extends Command
     {
         $phpVersion = $this->argument('phpVersion');
 
-        if (! in_array($phpVersion, config('php.cli_versions'))) {
+        if (! in_array($phpVersion, config('php.versions'))) {
             $this->error('Invalid PHP version.');
             return;
         }
