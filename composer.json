@@ -16,10 +16,10 @@
         }
     ],
     "require": {
-        "php": "^7.4|^8.0",
-        "laminas/laminas-text": "^2.9",
-        "laravel-zero/framework": "^8.10",
-        "symfony/process": "^5.1",
+        "php": "^8.1",
+        "laminas/laminas-text": "^2.10",
+        "laravel-zero/framework": "^10.0",
+        "symfony/process": "^6.0",
         "symfony/yaml": "^5.1"
     },
     "require-dev": {
