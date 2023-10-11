@@ -120,6 +120,9 @@ class Ssl
             $sslConfigPath
         ));
 
+        $crtBundle = File::get($crtPath) . File::get($caPemPath);
+        File::put($crtPath, $crtBundle);
+
         /**
          * 5. Clean up.
          */
