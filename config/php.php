@@ -13,5 +13,5 @@ return [
         '8.2',
         '8.3'
     ],
-    'openssl_cert_path' => '/usr/local/etc/openssl@1.1/cert.pem'
+    'openssl_cert_path' => getenv('HOMEBREW_PREFIX') . '/etc/openssl@3/cert.pem'
 ];
