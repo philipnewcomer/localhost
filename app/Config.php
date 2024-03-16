@@ -12,7 +12,14 @@ class Config
         File::ensureDirectoryExists(config('environment.config_directory_path'));
     }
 
-    public function getUserConfig(string $key, $default)
+    public function getUserConfig(string $key, $default = null)
+    {
+        $currentConfig = $this->getCurrentConfig();
+
+        return $currentConfig[$key] ?? $default;
+    }
+
+    public function setUserConfig(string $key, $value)
     {
         $configFilePath = sprintf(
             '%s/%s.yml',
@@ -20,10 +27,25 @@ class Config
             config('app.name')
         );
 
-        $config = File::exists($configFilePath)
-            ? (array) Yaml::parse(File::get($configFilePath))
-            : [];
+        $currentConfig = $this->getCurrentConfig();
 
-        return $config[$key] ?? $default;
+        $currentConfig[$key] = $value;
+
+        File::put($configFilePath, Yaml::dump($currentConfig));
+    }
+
+    protected function getCurrentConfig(): array
+    {
+        $configFilePath = sprintf(
+            '%s/%s.yml',
+            config('environment.config_directory_path'),
+            config('app.name')
+        );
+
+        if (!File::exists($configFilePath)) {
+            return [];
+        }
+
+        return (array) Yaml::parse(File::get($configFilePath));
     }
 }

@@ -1,8 +1,7 @@
 <?php
 
 return [
-    'config_directory' => getenv('HOMEBREW_PREFIX') . '/etc/php/{version}/conf.d',
-    'fpm_config_directory' => getenv('HOMEBREW_PREFIX') . '/etc/php/{version}/php-fpm.d',
+    'config_directory' => getenv('HOMEBREW_PREFIX') . '/etc/php/{version}',
     'default_version' => '8.2',
     'socket_directory' => sprintf(
         '%s/.%s',

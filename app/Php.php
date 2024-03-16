@@ -11,9 +11,15 @@ class Php
      */
     protected $commandLine;
 
-    public function __construct(CommandLine $commandLine)
+    /**
+     * @var Config
+     */
+    protected $config;
+
+    public function __construct(CommandLine $commandLine, Config $config)
     {
         $this->commandLine = $commandLine;
+        $this->config = $config;
     }
 
     public function link(string $version)
@@ -28,16 +34,19 @@ class Php
 
     public function generateConfigs()
     {
+        $xdebugEnabled = $this->config->getUserConfig('xdebugEnabled', true);
+
         $replace = [
             'cafile' => sprintf('%s/cafile.pem', config('environment.config_directory_path')),
             'homebrewPrefix' => getenv('HOMEBREW_PREFIX'),
+            'xdebugZendExtension' => $xdebugEnabled ? 'zend_extension' : '#zend_extension'
         ];
 
         $config = app(Stub::class)->get('php.ini', $replace);
 
         foreach (config('php.versions') as $phpVersion) {
             $filePath = sprintf(
-                '%s/%s.ini',
+                '%s/conf.d/%s.ini',
                 str_replace('{version}', $phpVersion, config('php.config_directory')),
                 config('app.command')
             );
@@ -46,11 +55,32 @@ class Php
         }
     }
 
+    public function cleanDefaultIniFileIncludes(): void
+    {
+        foreach (config('php.versions') as $phpVersion) {
+            $filePath = str_replace(
+                '{version}',
+                $phpVersion,
+                config('php.config_directory')
+            ) . '/php.ini';
+
+            $fileContent = File::get($filePath);
+
+            $newFileContent = str_replace(
+                'zend_extension="xdebug.so"' . "\n",
+                '',
+                $fileContent
+            );
+
+            File::put($filePath, $newFileContent);
+        }
+    }
+
     public function deleteConfigs()
     {
         foreach (config('php.versions') as $phpVersion) {
             $filePath = sprintf(
-                '%s/%s.ini',
+                '%s/conf.d/%s.ini',
                 str_replace('{version}', $phpVersion, config('php.config_directory')),
                 config('app.command')
             );
@@ -77,8 +107,8 @@ class Php
             $config = app(Stub::class)->get('php-fpm.conf', $replace);
 
             $filePath = sprintf(
-                '%s/%s.conf',
-                str_replace('{version}', $phpVersion, config('php.fpm_config_directory')),
+                '%s/php-fpm.d/%s.conf',
+                str_replace('{version}', $phpVersion, config('php.config_directory')),
                 config('app.command')
             );
 
@@ -94,8 +124,8 @@ class Php
 
         foreach (config('php.versions') as $phpVersion) {
             $defaultConfigFilePath = sprintf(
-                '%s/www.conf',
-                str_replace('{version}', $phpVersion, config('php.fpm_config_directory'))
+                '%s/php-fpm.d/www.conf',
+                str_replace('{version}', $phpVersion, config('php.config_directory'))
             );
 
             if (File::exists($defaultConfigFilePath)) {
@@ -108,8 +138,8 @@ class Php
     {
         foreach (config('php.versions') as $phpVersion) {
             $filePath = sprintf(
-                '%s/%s.conf',
-                str_replace('{version}', $phpVersion, config('php.fpm_config_directory')),
+                '%s/php-fpm.d/%s.conf',
+                str_replace('{version}', $phpVersion, config('php.config_directory')),
                 config('app.command')
             );
 

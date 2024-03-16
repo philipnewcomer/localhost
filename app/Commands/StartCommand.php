@@ -40,6 +40,7 @@ class StartCommand extends Command
         $this->task('Generating configs', function () use ($nginx, $php) {
             $php->generateConfigs();
             $php->generateFpmConfigs();
+            $php->cleanDefaultIniFileIncludes();
             $nginx->generateSiteConfigs();
         }, 'Waiting...');
 
