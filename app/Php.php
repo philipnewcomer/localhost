@@ -29,7 +29,8 @@ class Php
     public function generateConfigs()
     {
         $replace = [
-            'cafile' => sprintf('%s/cafile.pem', config('environment.config_directory_path'))
+            'cafile' => sprintf('%s/cafile.pem', config('environment.config_directory_path')),
+            'homebrewPrefix' => getenv('HOMEBREW_PREFIX'),
         ];
 
         $config = app(Stub::class)->get('php.ini', $replace);
