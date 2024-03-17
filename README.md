@@ -19,6 +19,10 @@ After installing Localhost, the script will install additional dependencies via 
 - `localhost start`: Boots up the system.
 - `localhost stop`: Shuts down the system.
 - `localhost reload`: Reloads the sites and restarts services.
+- `localhost php:link {phpVersion}`: Link the specfied PHP version for the command line. Example: `localhost php:link 8.2` to use PHP 8.2 on the command line.
+- `localhost xdebug`: Check whether Xdebug is enabled.
+  - `localhost xdebug --disable`: Disable Xdebug.
+  - `localhost xdebug --enable`: Enable Xdebug.
 
 ## Local Sites
 
@@ -48,6 +52,7 @@ To change the global defaults, create a YAML file at `~/.localhost/localhost.yml
 
 - `default_php_version`: The default PHP version for all sites that do not have a PHP version specified in their site-specific config file.
 - `sites_directory`: The full filesystem path to your sites directory.
+- `xdebug_enabled`: Whether Xdebug should be enabled. This value is toggled by `localhost xdebug --disable` and `localhost xdebug --enable`.
 
 ## Credentials
 
