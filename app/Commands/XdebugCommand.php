@@ -17,11 +17,11 @@ class XdebugCommand extends Command
     {
         if ($this->option('disable') || $this->option('enable')) {
             if ($this->option('disable')) {
-                $config->setUserConfig('xdebugEnabled', false);
+                $config->setUserConfig('xdebug_enabled', false);
             }
 
             if ($this->option('enable')) {
-                $config->setUserConfig('xdebugEnabled', true);
+                $config->setUserConfig('xdebug_enabled', true);
             }
 
             $this->task('Generating PHP configs', function () use ($php) {

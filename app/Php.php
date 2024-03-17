@@ -34,7 +34,7 @@ class Php
 
     public function generateConfigs()
     {
-        $xdebugEnabled = $this->config->getUserConfig('xdebugEnabled', true);
+        $xdebugEnabled = $this->config->getUserConfig('xdebug_enabled', true);
 
         $replace = [
             'homebrewPrefix' => getenv('HOMEBREW_PREFIX'),
