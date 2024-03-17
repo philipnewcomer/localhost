@@ -37,7 +37,6 @@ class Php
         $xdebugEnabled = $this->config->getUserConfig('xdebugEnabled', true);
 
         $replace = [
-            'cafile' => sprintf('%s/cafile.pem', config('environment.config_directory_path')),
             'homebrewPrefix' => getenv('HOMEBREW_PREFIX'),
             'xdebugZendExtension' => $xdebugEnabled ? 'zend_extension' : '#zend_extension'
         ];

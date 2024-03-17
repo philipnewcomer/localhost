@@ -26,7 +26,6 @@ class ReloadCommand extends Command
 
         $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
             $ssl->generateHostsCertificate($sites->getAllHosts());
-            $ssl->generateCafileCertificate();
         }, 'Waiting...');
 
         $this->task('Generating site configs', function () use ($nginx) {

@@ -54,6 +54,8 @@ class Ssl
             'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "%s"',
             $caPemPath
         ));
+
+        $this->commandLine->run('brew postinstall ca-certificates');
     }
 
     public function generateHostsCertificate(array $hosts)
@@ -134,20 +136,5 @@ class Ssl
         if (File::exists($sslConfigPath)) {
             File::delete($sslConfigPath);
         }
-    }
-
-    public function generateCafileCertificate()
-    {
-        $cafileCertificatePath = sprintf('%s/cafile.pem', config('environment.config_directory_path'));
-        $crtPath = sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command'));
-        $opensslCertPath = config('php.openssl_cert_path');
-
-        $cafileCertificate = File::exists($opensslCertPath)
-            ? File::get($opensslCertPath)
-            : '';
-
-        $cafileCertificate .= File::get($crtPath);
-
-        File::put($cafileCertificatePath, $cafileCertificate);
     }
 }

@@ -47,7 +47,6 @@ class StartCommand extends Command
         $this->task('Generating SSL certificate', function () use ($sites, $ssl) {
             $ssl->maybeGenerateCaCert();
             $ssl->generateHostsCertificate($sites->getAllHosts());
-            $ssl->generateCafileCertificate();
         }, 'Waiting...');
 
         $this->brewStartService('mailhog', 'Mailhog');
