@@ -91,7 +91,7 @@ class Site
         if (! empty($this->settings['php_version'])) {
             $phpVersion = $this->settings['php_version'];
         } else {
-            $phpVersion = app(Config::class)->getUserConfig('default_php_version', config('php.default_version'));
+            $phpVersion = app(Config::class)->getUserConfig('default_php_version', app(Php::class)->getVersions()[0]);
         }
 
         return number_format($phpVersion, 1);

@@ -25,4 +25,11 @@ class Stub
 
         return $contents;
     }
+
+    public function put(string $filename, string $path, array $replace = []): void
+    {
+        $contents = $this->get($filename, $replace);
+
+        app(Filesystem::class)->put($path, $contents);
+    }
 }

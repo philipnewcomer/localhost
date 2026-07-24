@@ -20,21 +20,44 @@ class Ssl
         $this->commandLine = $commandLine;
     }
 
-    public function maybeGenerateCaCert()
+    public function purgeCaStores()
     {
-        $caKeyPath = sprintf('%s/%s-ca.key', config('environment.config_directory_path'), config('app.command'));
-        $caPemPath = sprintf('%s/%s-ca.pem', config('environment.config_directory_path'), config('app.command'));
+        $caCertificatesPemPath = sprintf('/usr/local/share/ca-certificates/%s-ca.crt', config('app.command'));
+        $nssdbCertName = sprintf('%s root CA', config('app.command'));
 
-        if (File::exists($caPemPath) && File::exists($caKeyPath)) {
-            return;
+        if ('linux' === config('environment.platform')) {
+            $this->commandLine->run(sprintf(
+                'certutil -D -d $HOME/.pki/nssdb -n "%s"',
+                $nssdbCertName
+            ), function () {
+                // Don't die on error.
+            });
+
+            if (File::exists($caCertificatesPemPath)) {
+                $this->commandLine->run(sprintf('sudo rm %s', $caCertificatesPemPath));
+            }
+
+            $this->commandLine->run('sudo update-ca-certificates --fresh');
         }
 
-        $this->commandLine->run(sprintf(
-            'sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain',
-            self::CERT_COMMON_NAME
-        ), function () {
-            // Don't die on error.
-        });
+        if ('macos' === config('environment.platform')) {
+            $this->commandLine->run(sprintf(
+                'sudo security delete-certificate -c "%s" /Library/Keychains/System.keychain',
+                self::CERT_COMMON_NAME
+            ), function () {
+                // Don't die on error.
+            });
+        }
+    }
+
+    public function generateCaCert()
+    {
+        $this->purgeCaStores();
+
+        $caKeyPath = sprintf('%s/%s-ca.key', config('environment.config_directory_path'), config('app.command'));
+        $caPemPath = sprintf('%s/%s-ca.pem', config('environment.config_directory_path'), config('app.command'));
+        $caCertificatesPemPath = sprintf('/usr/local/share/ca-certificates/%s-ca.crt', config('app.command'));
+        $nssdbCertName = sprintf('%s root CA', config('app.command'));
 
         $subjArgs = sprintf(
             '/C=/ST=/O=%s/localityName=/commonName=%s/organizationalUnitName=/emailAddress=%s/',
@@ -50,12 +73,30 @@ class Ssl
             $caPemPath
         ));
 
-        $this->commandLine->run(sprintf(
-            'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "%s"',
-            $caPemPath
-        ));
+        if ('linux' === config('environment.platform')) {
+            $this->commandLine->run(sprintf(
+                'sudo ln -s %s %s',
+                $caPemPath,
+                $caCertificatesPemPath
+            ));
 
-        $this->commandLine->run('brew postinstall ca-certificates');
+            $this->commandLine->run('sudo update-ca-certificates');
+
+            $this->commandLine->run(sprintf(
+                'certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n "%s" -i %s',
+                $nssdbCertName,
+                $caPemPath
+            ));
+        }
+
+        if ('macos' === config('environment.platform')) {
+            $this->commandLine->run(sprintf(
+                'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "%s"',
+                $caPemPath
+            ));
+
+            $this->commandLine->run('brew postinstall ca-certificates');
+        }
     }
 
     public function generateHostsCertificate(array $hosts)

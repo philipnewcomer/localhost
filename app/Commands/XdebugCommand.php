@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Brew;
+use App\CommandLine;
 use App\Config;
 use App\Php;
 use LaravelZero\Framework\Commands\Command;
@@ -13,25 +14,15 @@ class XdebugCommand extends Command
 
     protected $description = 'Toggles the xDebug PHP extension.';
 
-    public function handle(Brew $brew, Config $config, Php $php)
+    public function handle(CommandLine $commandLine)
     {
         if ($this->option('disable') || $this->option('enable')) {
             if ($this->option('disable')) {
-                $config->setUserConfig('xdebug_enabled', false);
+                $commandLine->run('sudo phpdismod xdebug');
             }
 
             if ($this->option('enable')) {
-                $config->setUserConfig('xdebug_enabled', true);
-            }
-
-            $this->task('Generating PHP configs', function () use ($php) {
-                $php->generateConfigs();
-            }, 'Waiting...');
-
-            foreach (config('php.versions') as $phpVersion) {
-                $this->task(sprintf('Restarting PHP %s', $phpVersion), function () use ($brew, $phpVersion) {
-                    $brew->restartService('php@' . $phpVersion);
-                }, 'Waiting...');
+                $commandLine->run('sudo phpenmod xdebug');
             }
         } else {
             $xdebugEnabled = extension_loaded('xdebug');

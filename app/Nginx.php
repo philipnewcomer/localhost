@@ -19,7 +19,7 @@ class Nginx
             $siteConfigs[] = $this->getConfig($site);
         }
 
-        File::put($siteConfigsFilePath, join("\n", $siteConfigs));
+        app(Filesystem::class)->put($siteConfigsFilePath, join("\n", $siteConfigs));
     }
 
     public function deleteSiteConfigs()
@@ -31,7 +31,7 @@ class Nginx
         );
 
         if (File::exists($siteConfigsFilePath)) {
-            File::delete($siteConfigsFilePath);
+            app(Filesystem::class)->delete($siteConfigsFilePath);
         }
     }
 
@@ -45,11 +45,7 @@ class Nginx
             'certPath' => sprintf('%s/%s.crt', config('environment.config_directory_path'), config('app.command')),
             'certKeyPath' => sprintf('%s/%s.key', config('environment.config_directory_path'), config('app.command')),
             'serverName' => join(' ', $site->getHosts()),
-            'phpSocketPath' => sprintf(
-                '%s/php-%s.sock',
-                config('php.socket_directory'),
-                $site->getPhpVersion()
-            ),
+            'phpSocketPath' => app(Php::class)->getSocketPath($site->getPhpVersion()),
             'publicDirectoryPath' => $site->getPublicDirectoryPath(),
         ];
 

@@ -7,6 +7,8 @@ use App\CommandLine;
 use App\Hosts;
 use App\Nginx;
 use App\Php;
+use App\Sites;
+use App\Ssl;
 use LaravelZero\Framework\Commands\Command;
 
 class StopCommand extends Command
@@ -19,7 +21,7 @@ class StopCommand extends Command
     {
         $commandLine->requestSudo();
 
-
+        /*
         $this->brewStopService('mailhog', 'Mailhog');
         $this->brewStopService('mariadb', 'MariaDB');
         $this->brewStopService('nginx', 'Nginx');
@@ -32,11 +34,16 @@ class StopCommand extends Command
         }
 
         $this->brewStopService('redis', 'Redis');
+        */
 
         $this->task('Cleaning up generated configs', function () use ($nginx, $php) {
             $nginx->deleteSiteConfigs();
             $php->deleteConfigs();
             $php->deleteFpmConfigs();
+        }, 'Waiting...');
+
+        $this->task('Purging generated SSL certificate from CA stores', function () {
+            app(Ssl::class)->purgeCaStores();
         }, 'Waiting...');
 
         $this->task('Cleaning up hosts file', function () use ($hosts) {

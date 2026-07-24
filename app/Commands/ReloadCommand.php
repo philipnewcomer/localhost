@@ -6,6 +6,7 @@ use App\Brew;
 use App\CommandLine;
 use App\Hosts;
 use App\Nginx;
+use App\Php;
 use App\Sites;
 use App\Ssl;
 use LaravelZero\Framework\Commands\Command;
@@ -36,7 +37,7 @@ class ReloadCommand extends Command
             $brew->restartService('nginx');
         }, 'Waiting...');
 
-        foreach (config('php.versions') as $phpVersion) {
+        foreach (app(Php::class)->getVersions() as $phpVersion) {
             $this->task(sprintf('Restarting %s', sprintf('PHP %s', $phpVersion)), function () use ($phpVersion) {
                 app(Brew::class)->restartService('php@' . $phpVersion);
             }, 'Waiting...');

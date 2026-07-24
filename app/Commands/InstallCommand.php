@@ -19,6 +19,7 @@ class InstallCommand extends Command
     {
         $commandLine->requestSudo();
 
+        /*
         $this->ensureInstalledBrew('mailhog', 'Mailhog');
         $this->ensureInstalledBrew('mariadb', 'MariaDB');
         $this->ensureInstalledBrew('nginx', 'Nginx');
@@ -33,39 +34,9 @@ class InstallCommand extends Command
             'redis' => 'Redis',
             'xdebug' => 'Xdebug'
         ]);
+        */
 
-        $this->task('Creating MySQL user', function () use ($commandLine) {
-            app(Brew::class)->startService('mariadb');
 
-            // If this is the first time MariaDB has been started, there will be a bit of a delay before it will be
-            // ready to accept connections.
-            $timeout = now()->addSeconds(10);
-            while (true) {
-                $result = $commandLine->run('sudo mysqladmin ping --no-beep', function () {});
-
-                if ('mysqld is alive' === $result) {
-                    break;
-                }
-
-                if (now() > $timeout) {
-                    throw new Exception('Timed out waiting for MySQL.');
-                }
-
-                sleep(1);
-            }
-
-            $sql = "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
-                . " DELETE FROM mysql.user WHERE User='';"
-                . " DROP DATABASE IF EXISTS test;"
-                . " DELETE FROM mysql.db WHERE Db='test' OR Db='test\_%';"
-                . " CREATE USER IF NOT EXISTS 'localhost'@'%' IDENTIFIED BY 'localhost';"
-                . " GRANT ALL PRIVILEGES ON *.* to 'localhost'@'%';"
-                . " FLUSH PRIVILEGES;";
-
-            $commandLine->run(sprintf('sudo mysql -e "%s"', $sql));
-
-            app(Brew::class)->stopService('mariadb');
-        }, 'Waiting...');
 
         $this->info(sprintf(
             'Installation successful. Run `%s start` to boot up the system.',

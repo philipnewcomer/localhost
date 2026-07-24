@@ -2,7 +2,9 @@
 
 namespace App;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class Php
 {
@@ -22,46 +24,62 @@ class Php
         $this->config = $config;
     }
 
+    /**
+     * @return string[]
+     */
+    public function getVersions(): array
+    {
+        $versions = collect();
+
+        foreach (File::directories(config('php.configs_directory')) as $directory) {
+            $version = Str::afterLast($directory, '/');
+            if (is_numeric($version)) {
+                $versions[] = $version;
+            }
+        }
+
+        return $versions->sortDesc()->values()->toArray();
+    }
+
     public function link(string $version)
     {
-        $command = sprintf(
-            'brew unlink php && brew link php@%s --force --overwrite',
-            $version
-        );
 
-        return $this->commandLine->run($command);
+        if ('macos' === config('environment.platform')) {
+            $this->commandLine->run(sprintf(
+                'brew unlink php && brew link php@%s --force --overwrite',
+                $version
+            ));
+        } else {
+            $this->commandLine->run(sprintf(
+                'sudo update-alternatives --set php /usr/bin/php%s',
+                $version
+            ));
+        }
     }
 
     public function generateConfigs()
     {
-        $xdebugEnabled = $this->config->getUserConfig('xdebug_enabled', true);
-
-        $replace = [
-            'homebrewPrefix' => getenv('HOMEBREW_PREFIX'),
-            'xdebugZendExtension' => $xdebugEnabled ? 'zend_extension' : '#zend_extension'
-        ];
-
-        $config = app(Stub::class)->get('php.ini', $replace);
-
-        foreach (config('php.versions') as $phpVersion) {
-            $filePath = sprintf(
-                '%s/conf.d/%s.ini',
-                str_replace('{version}', $phpVersion, config('php.config_directory')),
+        foreach ($this->getVersions() as $phpVersion) {
+            $path = sprintf(
+                '%s/%s/%s/%s.ini',
+                config('php.configs_directory'),
+                $phpVersion,
+                config('environment.platform') === 'macos' ? 'conf.d' : 'mods-available',
                 config('app.command')
             );
 
-            File::put($filePath, $config);
+            app(Stub::class)->put('php.ini', $path);
+        }
+
+        if ('linux' === config('environment.platform')) {
+            $this->commandLine->run(sprintf('sudo phpenmod %s', config('app.command')));
         }
     }
 
     public function cleanDefaultIniFileIncludes(): void
     {
-        foreach (config('php.versions') as $phpVersion) {
-            $filePath = str_replace(
-                '{version}',
-                $phpVersion,
-                config('php.config_directory')
-            ) . '/php.ini';
+        foreach ($this->getVersions() as $phpVersion) {
+            $path = sprintf('%s/%s/php.ini', config('php.configs_directory'), $phpVersion);
 
             $fileContent = File::get($filePath);
 
@@ -72,78 +90,84 @@ class Php
             );
 
             File::put($filePath, $newFileContent);
+
+            $this->commandLine->run(sprintf(
+                'sudo -- sh -c "echo %s > %s"',
+                escapeshellarg(str_replace('"', '\"', $contents)),
+                $path
+            ));
         }
     }
 
     public function deleteConfigs()
     {
-        foreach (config('php.versions') as $phpVersion) {
-            $filePath = sprintf(
-                '%s/conf.d/%s.ini',
-                str_replace('{version}', $phpVersion, config('php.config_directory')),
+        if ('linux' === config('environment.platform')) {
+            $this->commandLine->run(sprintf('sudo phpdismod %s', config('app.command')));
+        }
+
+        foreach ($this->getVersions() as $phpVersion) {
+            $path = sprintf(
+                '%s/%s/%s/%s.ini',
+                config('php.configs_directory'),
+                $phpVersion,
+                config('environment.platform') === 'macos' ? 'conf.d' : 'mods-available',
                 config('app.command')
             );
 
-            if (File::exists($filePath)) {
-                File::delete($filePath);
+            if (File::exists($path)) {
+                app(Filesystem::class)->delete($path);
             }
+        }
+    }
+
+    public function getSocketPath(string $phpVersion): string
+    {
+        if ('macos' === config('environment.platform')) {
+            return sprintf(
+                '%s/php-%s.sock',
+                config('environment.user_home_directory_path'),
+                $phpVersion
+            );
+        } else {
+            return sprintf('/run/php/php%s-fpm.sock', $phpVersion);
         }
     }
 
     public function generateFpmConfigs()
     {
-        foreach (config('php.versions') as $phpVersion) {
+        foreach ($this->getVersions() as $phpVersion) {
             $replace = [
                 'command' => config('app.command'),
                 'user' => config('environment.user'),
-                'listen' => sprintf(
-                    '%s/php-%s.sock',
-                    config('php.socket_directory'),
-                    $phpVersion
-                )
+                'group' => config('environment.group'),
+                'listen' => $this->getSocketPath($phpVersion),
             ];
 
-            $config = app(Stub::class)->get('php-fpm.conf', $replace);
-
-            $filePath = sprintf(
-                '%s/php-fpm.d/%s.conf',
-                str_replace('{version}', $phpVersion, config('php.config_directory')),
+            $path = sprintf(
+                '%s/%s/%s/www%s-overrides.conf',
+                config('php.configs_directory'),
+                $phpVersion,
+                'macos' === config('environment.platform') ? 'php-fpm.d' : 'fpm/pool.d',
                 config('app.command')
             );
 
-            File::put($filePath, $config);
-        }
-
-        $this->maybeDisableDefaultFpmConfigs();
-    }
-
-    public function maybeDisableDefaultFpmConfigs()
-    {
-        // @todo figure the situation with a clean install of fpm.
-
-        foreach (config('php.versions') as $phpVersion) {
-            $defaultConfigFilePath = sprintf(
-                '%s/php-fpm.d/www.conf',
-                str_replace('{version}', $phpVersion, config('php.config_directory'))
-            );
-
-            if (File::exists($defaultConfigFilePath)) {
-                File::move($defaultConfigFilePath, $defaultConfigFilePath . '.bak');
-            }
+            app(Stub::class)->put('php-fpm.conf', $path, $replace);
         }
     }
 
     public function deleteFpmConfigs()
     {
-        foreach (config('php.versions') as $phpVersion) {
+        foreach ($this->getVersions() as $phpVersion) {
             $filePath = sprintf(
-                '%s/php-fpm.d/%s.conf',
-                str_replace('{version}', $phpVersion, config('php.config_directory')),
+                '%s/%s/%s/www%s-overrides.conf',
+                config('php.configs_directory'),
+                $phpVersion,
+                'macos' === config('environment.platform') ? 'php-fpm.d' : 'fpm/pool.d',
                 config('app.command')
             );
 
             if (File::exists($filePath)) {
-                File::delete($filePath);
+                app(Filesystem::class)->delete($filePath);
             }
         }
     }
